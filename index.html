@@ -107,12 +107,12 @@
         <button class="copy-btn" onclick="copyToClipboard()">複製到剪貼簿 (iTunes 格式)</button>
     </div>
     
-    <p class="footer-note">提示：請確保已正確配置 Cloudflare Worker 網址。</p>
+    <p class="footer-note">提示：網頁已連接至你的 Cloudflare Worker。</p>
 </div>
 
 <script>
-    // --- 重要：請在此處填入你的 Cloudflare Worker 網址 ---
-    const WORKER_URL = 'kkboxtoitunes.lincolntam56.workers.dev';
+    // --- 已更新：填入你的 Cloudflare Worker 網址 ---
+    const WORKER_URL = 'https://kkboxtoitunes.lincolntam56.workers.dev/';
 
     async function fetchMusicData() {
         const url = document.getElementById('songUrl').value.trim();
@@ -129,11 +129,17 @@
         resultSection.style.display = 'none';
 
         try {
+            // 發送請求到你的 Worker
             const response = await fetch(`${WORKER_URL}?url=${encodeURIComponent(url)}`);
             if (!response.ok) throw new Error('網路回應不正確');
             
             const data = await response.json();
             
+            if (data.error) {
+                alert('錯誤: ' + data.error);
+                return;
+            }
+
             document.getElementById('resTitle').innerText = data.title || 'N/A';
             document.getElementById('resArtist').innerText = data.artist || 'N/A';
             document.getElementById('resComposer').innerText = data.composer || 'N/A';
@@ -143,7 +149,7 @@
             resultSection.style.display = 'block';
         } catch (error) {
             console.error(error);
-            alert('抓取失敗。請檢查 Worker 是否已啟動及網址是否正確。');
+            alert('抓取失敗。請確保你的 Cloudflare Worker 已部署且代碼正確。');
         } finally {
             btn.disabled = false;
             btn.innerText = '抓取資料';
