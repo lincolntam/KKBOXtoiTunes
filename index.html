@@ -5,171 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iTunes Music Tag Helper</title>
     <style>
-        :root {
-            --primary-color: #00b7d3;
-            --secondary-color: #28a745;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-color: #333;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        }
-        h1 { margin-top: 0; font-size: 24px; color: var(--primary-color); text-align: center; }
-        .input-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; }
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-        button:hover { opacity: 0.9; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
-        .result-section {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            display: none;
-        }
-        .field { margin-bottom: 15px; }
-        .field span { font-weight: bold; color: #666; margin-right: 5px; }
-        .lyrics-container {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #eee;
-            white-space: pre-wrap;
-            font-size: 14px;
-            max-height: 300px;
-            overflow-y: auto;
-            margin-top: 10px;
-        }
-        .copy-btn {
-            background-color: var(--secondary-color);
-            margin-top: 20px;
-        }
-        .footer-note {
-            font-size: 12px;
-            color: #999;
-            margin-top: 20px;
-            text-align: center;
-        }
+        :root { --primary: #00b7d3; --bg: #f4f7f6; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 500px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        h1 { color: var(--primary); text-align: center; font-size: 22px; }
+        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        #result { margin-top: 25px; display: none; border-top: 1px solid #eee; padding-top: 20px; }
+        .lyrics-box { background: #f9f9f9; padding: 15px; border-radius: 8px; white-space: pre-wrap; font-size: 14px; max-height: 300px; overflow-y: auto; margin: 10px 0; border: 1px solid #eee; }
+        .copy-btn { background: #28a745; margin-top: 10px; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Music Tag Helper</h1>
+        <input type="text" id="songUrl" placeholder="貼上 KKBOX 歌曲網址...">
+        <button id="btn" onclick="fetchData()">抓取資料</button>
 
-<div class="container">
-    <h1>Music Tag Helper</h1>
-    <div class="input-group">
-        <label for="songUrl">KKBOX 歌曲網址</label>
-        <input type="text" id="songUrl" placeholder="https://www.kkbox.com/tw/tc/song/...">
+        <div id="result">
+            <p><strong>歌名：</strong><span id="rTitle"></span></p>
+            <p><strong>歌手：</strong><span id="rArtist"></span></p>
+            <p><strong>作曲：</strong><span id="rComposer"></span></p>
+            <p><strong>作詞：</strong><span id="rLyricist"></span></p>
+            <div class="lyrics-box" id="rLyrics"></div>
+            <button class="copy-btn" onclick="copyText()">複製完整資訊 (iTunes 格式)</button>
+        </div>
     </div>
-    <button id="fetchBtn" onclick="fetchMusicData()">抓取資料</button>
 
-    <div id="resultSection" class="result-section">
-        <div class="field"><span>歌名:</span> <span id="resTitle"></span></div>
-        <div class="field"><span>歌手:</span> <span id="resArtist"></span></div>
-        <div class="field"><span>作曲:</span> <span id="resComposer"></span></div>
-        <div class="field"><span>作詞:</span> <span id="resLyricist"></span></div>
-        <label>歌詞:</label>
-        <div id="resLyrics" class="lyrics-container"></div>
-        
-        <button class="copy-btn" onclick="copyToClipboard()">複製到剪貼簿 (iTunes 格式)</button>
-    </div>
-    
-    <p class="footer-note">提示：網頁已連接至你的 Cloudflare Worker。</p>
-</div>
+    <script>
+        const API = 'https://kkboxtoitunes.lincolntam56.workers.dev/';
 
-<script>
-    // --- 已更新：填入你的 Cloudflare Worker 網址 ---
-    const WORKER_URL = 'https://kkboxtoitunes.lincolntam56.workers.dev/';
+        async function fetchData() {
+            const url = document.getElementById('songUrl').value;
+            const btn = document.getElementById('btn');
+            if(!url) return alert('請輸入網址');
 
-    async function fetchMusicData() {
-        const url = document.getElementById('songUrl').value.trim();
-        const btn = document.getElementById('fetchBtn');
-        const resultSection = document.getElementById('resultSection');
+            btn.innerText = '讀取中...';
+            btn.disabled = true;
 
-        if (!url) {
-            alert('請輸入有效網址');
-            return;
-        }
+            try {
+                const res = await fetch(`${API}?url=${encodeURIComponent(url)}`);
+                const data = await res.json();
+                if(data.error) throw new Error(data.error);
 
-        btn.disabled = true;
-        btn.innerText = '讀取中...';
-        resultSection.style.display = 'none';
-
-        try {
-            // 發送請求到你的 Worker
-            const response = await fetch(`${WORKER_URL}?url=${encodeURIComponent(url)}`);
-            if (!response.ok) throw new Error('網路回應不正確');
-            
-            const data = await response.json();
-            
-            if (data.error) {
-                alert('錯誤: ' + data.error);
-                return;
+                document.getElementById('rTitle').innerText = data.title;
+                document.getElementById('rArtist').innerText = data.artist;
+                document.getElementById('rComposer').innerText = data.composer;
+                document.getElementById('rLyricist').innerText = data.lyricist;
+                document.getElementById('rLyrics').innerText = data.lyrics;
+                document.getElementById('result').style.display = 'block';
+            } catch (e) {
+                alert('抓取失敗，請檢查 Worker 是否已部署代碼');
+            } finally {
+                btn.innerText = '抓取資料';
+                btn.disabled = false;
             }
-
-            document.getElementById('resTitle').innerText = data.title || 'N/A';
-            document.getElementById('resArtist').innerText = data.artist || 'N/A';
-            document.getElementById('resComposer').innerText = data.composer || 'N/A';
-            document.getElementById('resLyricist').innerText = data.lyricist || 'N/A';
-            document.getElementById('resLyrics').innerText = data.lyrics || 'N/A';
-            
-            resultSection.style.display = 'block';
-        } catch (error) {
-            console.error(error);
-            alert('抓取失敗。請確保你的 Cloudflare Worker 已部署且代碼正確。');
-        } finally {
-            btn.disabled = false;
-            btn.innerText = '抓取資料';
         }
-    }
 
-    function copyToClipboard() {
-        const title = document.getElementById('resTitle').innerText;
-        const artist = document.getElementById('resArtist').innerText;
-        const composer = document.getElementById('resComposer').innerText;
-        const lyricist = document.getElementById('resLyricist').innerText;
-        const lyrics = document.getElementById('resLyrics').innerText;
-
-        const textToCopy = `歌名：${title}\n歌手：${artist}\n作曲：${composer}\n作詞：${lyricist}\n\n[歌詞]\n${lyrics}`;
-
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            alert('已成功複製到剪貼簿！');
-        });
-    }
-</script>
-
+        function copyText() {
+            const t = document.getElementById('rTitle').innerText;
+            const a = document.getElementById('rArtist').innerText;
+            const c = document.getElementById('rComposer').innerText;
+            const l = document.getElementById('rLyricist').innerText;
+            const ly = document.getElementById('rLyrics').innerText;
+            const full = `歌名：${t}\n歌手：${a}\n作曲：${c}\n作詞：${l}\n\n[歌詞]\n${ly}`;
+            navigator.clipboard.writeText(full);
+            alert('已複製！');
+        }
+    </script>
 </body>
 </html>
