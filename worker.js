@@ -10,7 +10,7 @@ export default {
     };
 
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-    if (!targetUrl) return new Response("Ready", { headers: corsHeaders });
+    if (!targetUrl) return new Response("Worker is Ready", { headers: corsHeaders });
 
     try {
       const response = await fetch(targetUrl, {
@@ -18,26 +18,25 @@ export default {
       });
       const html = await response.text();
 
-      // 提取 Meta 資訊
-      const title = html.match(/<meta property="og:title" content="(.*?)"/)?.[1] || "未知歌名";
+      // 提取資料
+      const title = html.match(/<meta property="og:title" content="(.*?)"/)?.[1] || "未知";
       const artistMatch = html.match(/歌手：(.*?)[。|\s]/);
-      const artist = artistMatch ? artistMatch[1] : "未知歌手";
-
-      // 提取完整歌詞
+      const artist = artistMatch ? artistMatch[1] : "未知";
+      
+      // 提取完整歌詞並處理換行
       const lyricsBlock = html.match(/<div class="lyrics">([\s\S]*?)<\/div>/);
-      let lyrics = "未能抓取完整歌詞";
+      let lyrics = "未找到歌詞";
       if (lyricsBlock) {
         lyrics = lyricsBlock[1]
-          .replace(/<br\s*\/?>/gi, "\n") // 核心：將網頁換行轉為文字換行
-          .replace(/<[^>]*>/g, "")      // 移除所有 HTML 標籤
+          .replace(/<br\s*\/?>/gi, "\n")
+          .replace(/<[^>]*>/g, "")
+          .replace(/&nbsp;/g, " ")
           .trim();
       }
 
-      // 提取作曲作詞
       const composer = html.match(/作曲：(.*?)\s/)?.[1] || "請參考網頁";
       const lyricist = html.match(/作詞：(.*?)\s/)?.[1] || "請參考網頁";
 
-      // 回傳 JSON 數據
       return new Response(JSON.stringify({ title, artist, composer, lyricist, lyrics }), {
         headers: { ...corsHeaders, "Content-Type": "application/json;charset=UTF-8" }
       });
