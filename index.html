@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KKBOX Copy Kit</title>
+  <link rel="stylesheet" href="style.css?v=backend-meta1">
+</head>
+<body class="state-initial">
+  <main class="app-shell">
+    <section class="landing-panel" aria-label="KKBOX song URL input">
+      <div class="landing-copy">
+        <p class="eyebrow">KKBOX Copy Kit</p>
+        <h1>Paste a song URL</h1>
+      </div>
+      <form id="songForm" class="search-bar">
+        <input id="songUrl" type="url" placeholder="https://www.kkbox.com/tw/tc/song/..." autocomplete="off">
+        <button type="submit">Read</button>
+      </form>
+      <button id="loadExample" class="text-button" type="button">Use example</button>
+      <span id="status" role="status"></span>
+    </section>
+
+    <section class="loading-panel" aria-live="polite">
+      <div class="loader-disc"></div>
+      <p>Reading KKBOX metadata...</p>
+    </section>
+
+    <section class="hero-player">
+      <img id="ambientArtwork" class="ambient-art" alt="">
+      <div class="hero-status"><span>KKBOX Copy Kit</span></div>
+
+      <div class="cover-stage" aria-label="歌曲插圖預覽">
+        <article class="cover-card side-card left-far">
+          <div class="mini-art cover-static cover-one"></div>
+        </article>
+        <article class="cover-card side-card left-near">
+          <div class="mini-art cover-static cover-two"></div>
+        </article>
+        <article class="cover-card main-card">
+          <div class="main-art-wrap">
+            <img id="artworkPreview" alt="專輯插圖">
+            <div id="emptyArtwork">Artwork</div>
+          </div>
+        </article>
+        <article class="cover-card side-card right-near">
+          <div class="mini-art cover-static cover-four"></div>
+        </article>
+        <article class="cover-card side-card right-far">
+          <div class="mini-art cover-static cover-five"></div>
+        </article>
+      </div>
+
+      <div class="hero-caption">
+        <strong id="miniTitle">No song loaded</strong>
+        <span id="miniArtist">Waiting for URL</span>
+      </div>
+    </section>
+
+    <section class="input-panel panel fallback-panel">
+      <p class="fallback-note">Auto read failed. Paste KKBOX page source or visible page text, then parse it.</p>
+      <textarea id="sourceText" spellcheck="false" placeholder="Paste KKBOX page source or visible page text"></textarea>
+      <div class="actions">
+        <button id="parseText" type="button">Parse pasted content</button>
+        <button id="clearAll" class="ghost" type="button">Clear</button>
+      </div>
+    </section>
+
+    <section class="work-grid">
+      <section class="panel details-panel">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Metadata</p>
+            <h2>Details</h2>
+          </div>
+          <button id="copyExport" class="copy" type="button">Copy All</button>
+        </div>
+
+        <div class="grid">
+          <label class="copy-field">Song<span class="inline-copy"><span class="field-icon">S</span><input id="title" class="field"><button class="copy icon-copy" data-copy="title" type="button">Copy</button></span></label>
+          <label class="copy-field">Artist<span class="inline-copy"><span class="field-icon">A</span><input id="artist" class="field"><button class="copy icon-copy" data-copy="artist" type="button">Copy</button></span></label>
+          <label class="copy-field">Album<span class="inline-copy"><span class="field-icon">AL</span><input id="album" class="field"><button class="copy icon-copy" data-copy="album" type="button">Copy</button></span></label>
+          <label class="copy-field">Year<span class="inline-copy"><span class="field-icon">Y</span><input id="year" class="field"><button class="copy icon-copy" data-copy="year" type="button">Copy</button></span></label>
+          <label class="copy-field">Release Date<span class="inline-copy"><span class="field-icon">D</span><input id="releaseDate" class="field"><button class="copy icon-copy" data-copy="releaseDate" type="button">Copy</button></span></label>
+          <label class="copy-field">Lyricist<span class="inline-copy"><span class="field-icon">L</span><input id="lyricist" class="field"><button class="copy icon-copy" data-copy="lyricist" type="button">Copy</button></span></label>
+          <label class="copy-field">Composer<span class="inline-copy"><span class="field-icon">C</span><input id="composer" class="field"><button class="copy icon-copy" data-copy="composer" type="button">Copy</button></span></label>
+          <label class="copy-field">Arranger<span class="inline-copy"><span class="field-icon">AR</span><input id="arranger" class="field"><button class="copy icon-copy" data-copy="arranger" type="button">Copy</button></span></label>
+          <label class="copy-field">Producer<span class="inline-copy"><span class="field-icon">P</span><input id="producer" class="field"><button class="copy icon-copy" data-copy="producer" type="button">Copy</button></span></label>
+          <label class="copy-field">Artwork URL<span class="inline-copy"><span class="field-icon">IMG</span><input id="artwork" class="field" placeholder="Artwork URL"><button class="copy icon-copy" data-copy="artwork" type="button">Copy</button></span></label>
+          <label class="copy-field">Source URL<span class="inline-copy"><span class="field-icon">URL</span><input id="sourceUrl" class="field"><button class="copy icon-copy" data-copy="sourceUrl" type="button">Copy</button></span></label>
+        </div>
+
+        <div class="lyrics-section">
+          <div class="section-head">
+            <h2>Lyrics</h2>
+            <button class="copy icon-copy" data-copy="lyrics" type="button">Copy Lyrics</button>
+          </div>
+          <textarea id="lyrics" class="lyrics-box" spellcheck="false"></textarea>
+        </div>
+
+        <details class="export-drawer">
+          <summary>Export Text</summary>
+          <div class="export-actions">
+            <button id="buildExport" type="button">Refresh Export</button>
+            <button class="copy" data-copy="exportText" type="button">Copy Export</button>
+          </div>
+          <textarea id="exportText" class="lyrics-box compact" spellcheck="false"></textarea>
+        </details>
+      </section>
+    </section>
+  </main>
+  <script src="app.js?v=backend-meta1"></script>
+</body>
+</html>
